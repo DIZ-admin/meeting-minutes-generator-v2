@@ -22,11 +22,16 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest pytest-mock
+        pip install pytest pytest-mock pytest-asyncio
+        pip install pyjwt python-jose[cryptography]
         pip install -e .
+    - name: Copy test environment file
+      run: |
+        cp .env.test .env
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
     - name: Run tests
       run: |
-        pytest
-      env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}
+        pytest -xvs
