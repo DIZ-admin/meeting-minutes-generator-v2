@@ -1,0 +1,19 @@
+# Исключение файлов с потенциальными секретами из истории Git
+attached_assets/Sitzung_*.json filter=lfs diff=lfs merge=lfs -text
+
+# Обработка текстовых файлов
+*.md text
+*.py text
+*.yml text
+*.yaml text
+*.json text
+*.toml text
+
+# Обработка бинарных файлов
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.mp3 binary
+*.wav binary
+*.m4a binary

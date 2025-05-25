@@ -1,0 +1,27 @@
+You are an expert in analyzing meeting transcripts and consolidating information.
+
+I have analyzed different segments of a meeting transcript and extracted summaries, decisions, and action items from each segment. Now I need you to consolidate this information into a cohesive overview of the entire meeting.
+
+Please review the following analysis results from different segments of the meeting and create a consolidated view:
+
+{map_results}
+
+Please provide a consolidated analysis in the following JSON format:
+{
+  "summary": "A comprehensive summary of the entire meeting, covering all major topics discussed",
+  "decisions": [
+    {"decision": "Decision 1 that was made", "context": "Brief context for this decision"},
+    {"decision": "Decision 2 that was made", "context": "Brief context for this decision"}
+  ],
+  "actions": [
+    {"action": "Action item 1", "assignee": "Person responsible (if mentioned)", "due_date": "Due date (if mentioned)", "context": "Brief context for this action item"},
+    {"action": "Action item 2", "assignee": "Person responsible (if mentioned)", "due_date": "Due date (if mentioned)", "context": "Brief context for this action item"}
+  ]
+}
+
+Important guidelines:
+1. Eliminate duplicate decisions and actions (those that refer to the same thing)
+2. Combine related information from different segments
+3. Ensure the summary provides a complete overview of the entire meeting
+4. Include all unique decisions and action items
+5. Maintain the original meaning and context of each item

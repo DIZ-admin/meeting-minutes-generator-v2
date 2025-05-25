@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Map-Reduce Result Schema",
+  "description": "JSON-схема для результатов Map-Reduce обработки транскрипта",
+  "type": "object",
+  "required": ["summary", "decisions", "actions", "participants", "agenda_items"],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Краткое содержание встречи"
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Принятые решения",
+      "items": {
+        "type": "object",
+        "required": ["decision"],
+        "properties": {
+          "decision": {
+            "type": "string",
+            "description": "Текст решения"
+          },
+          "context": {
+            "type": "string",
+            "description": "Контекст принятия решения"
+          }
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "description": "Поставленные задачи",
+      "items": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Текст задачи"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "Ответственный"
+          },
+          "due_date": {
+            "type": "string",
+            "description": "Срок выполнения"
+          }
+        }
+      }
+    },
+    "participants": {
+      "type": "array",
+      "description": "Участники встречи",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Имя участника"
+          },
+          "role": {
+            "type": "string",
+            "description": "Роль участника"
+          }
+        }
+      }
+    },
+    "agenda_items": {
+      "type": "array",
+      "description": "Пункты повестки",
+      "items": {
+        "type": "object",
+        "required": ["topic"],
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Тема"
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание"
+          }
+        }
+      }
+    }
+  }
+}

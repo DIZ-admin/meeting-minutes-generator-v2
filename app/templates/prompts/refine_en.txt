@@ -1,0 +1,69 @@
+You are an expert in creating detailed and well-structured meeting protocols.
+
+I have analyzed a meeting transcript and extracted the key information. Now I need you to create a formal meeting protocol based on this analysis and the provided meeting information.
+
+Meeting Information:
+{meeting_info}
+
+Analysis Results:
+{reduced_data}
+
+Please create a comprehensive meeting protocol in JSON format that follows this structure:
+{
+  "metadata": {
+    "title": "Meeting title",
+    "date": "YYYY-MM-DD",
+    "location": "Meeting location",
+    "participants": ["Participant 1", "Participant 2", ...],
+    "organizer": "Meeting organizer",
+    "agenda": ["Agenda item 1", "Agenda item 2", ...]
+  },
+  "summary": "A comprehensive executive summary of the meeting",
+  "discussion_points": [
+    {
+      "topic": "Topic 1",
+      "details": "Detailed discussion about Topic 1"
+    },
+    {
+      "topic": "Topic 2",
+      "details": "Detailed discussion about Topic 2"
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Decision 1",
+      "context": "Context for Decision 1"
+    },
+    {
+      "decision": "Decision 2",
+      "context": "Context for Decision 2"
+    }
+  ],
+  "action_items": [
+    {
+      "action": "Action item 1",
+      "assignee": "Person responsible",
+      "due_date": "YYYY-MM-DD",
+      "context": "Context for Action item 1"
+    },
+    {
+      "action": "Action item 2",
+      "assignee": "Person responsible",
+      "due_date": "YYYY-MM-DD",
+      "context": "Context for Action item 2"
+    }
+  ],
+  "next_meeting": {
+    "date": "YYYY-MM-DD",
+    "time": "HH:MM",
+    "location": "Location for next meeting",
+    "agenda_items": ["Agenda item 1 for next meeting", "Agenda item 2 for next meeting"]
+  }
+}
+
+Guidelines:
+1. Use the provided meeting information for the metadata section
+2. Create discussion_points based on the summary from the analysis
+3. Include all decisions and action items from the analysis
+4. If information about the next meeting is not available, use null for the next_meeting field
+5. Ensure the protocol is professional, clear, and well-structured

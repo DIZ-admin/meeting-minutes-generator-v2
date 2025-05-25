@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}Meeting Protocol Generator - Протоколы{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Протоколы совещаний</h2>
+        <p class="lead">Просмотр и экспорт сгенерированных протоколов</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Список протоколов</h5>
+                <button class="btn btn-sm btn-outline-secondary" id="refreshProtocolsBtn">
+                    <i class="fas fa-sync-alt me-1"></i> Обновить
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="protocolsList">
+                    <p class="text-center">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 
+                        Загрузка протоколов...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для просмотра протокола -->
+<div class="modal fade" id="protocolModal" tabindex="-1" aria-labelledby="protocolModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="protocolModalLabel">Протокол совещания</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="protocol-content">
+                    <div class="text-center">
+                        <span class="spinner-border" role="status" aria-hidden="true"></span>
+                        <p>Загрузка содержимого протокола...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="btn-group me-auto">
+                    <button type="button" class="btn btn-outline-secondary" id="copyProtocolBtn">
+                        <i class="fas fa-copy me-1"></i> Копировать
+                    </button>
+                    <a href="#" class="btn btn-outline-success" id="downloadMdBtn" target="_blank">
+                        <i class="fas fa-file-download me-1"></i> Скачать MD
+                    </a>
+                    <a href="#" class="btn btn-outline-info" id="downloadJsonBtn" target="_blank">
+                        <i class="fas fa-file-code me-1"></i> Скачать JSON
+                    </a>
+                </div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Загрузка списка протоколов при загрузке страницы
+        loadProtocols();
+        
+        // Обработчик кнопки обновления списка протоколов
+        document.getElementById('refreshProtocolsBtn').addEventListener('click', loadProtocols);
+        
+        // Обработчик кнопки копирования протокола
+        document.getElementById('copyProtocolBtn').addEventListener('click', copyProtocolContent);
+    });
+    
+    function loadProtocols() {
+        const protocolsList = document.getElementById('protocolsList');
+        if (!protocolsList) return;
+        
+        protocolsList.innerHTML = '<p class="text-center"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Загрузка протоколов...</p>';
+        
+        axios.get('/api/v1/protocols')
+            .then(function(response) {
+                const protocols = response.data.protocols;
+                
+                if (protocols.length === 0) {
+                    protocolsList.innerHTML = '<div class="alert alert-info text-center">Нет доступных протоколов</div>';
+                    return;
+                }
+                
+                let html = '<div class="table-responsive"><table class="table table-hover">';
+                html += `
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Дата</th>
+                            <th>Организатор</th>
+                            <th>Участники</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                
+                protocols.forEach(function(protocol) {
+                    const date = protocol.metadata?.date ? new Date(protocol.metadata.date).toLocaleDateString() : 'Не указана';
+                    const title = protocol.metadata?.title || 'Без названия';
+                    const organizer = protocol.metadata?.organizer || 'Не указан';
+                    
+                    // Получаем список участников
+                    let participants = 'Нет данных';
+                    if (protocol.participants && protocol.participants.length > 0) {
+                        if (typeof protocol.participants[0] === 'string') {
+                            participants = protocol.participants.join(', ');
+                        } else if (protocol.participants[0].name) {
+                            participants = protocol.participants.map(p => p.name).join(', ');
+                        }
+                    }
+                    
+                    html += `
+                        <tr>
+                            <td>${title}</td>
+                            <td>${date}</td>
+                            <td>${organizer}</td>
+                            <td>${participants}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="viewProtocol('${protocol.id}')">
+                                        <i class="fas fa-eye me-1"></i> Просмотр
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="visually-hidden">Меню</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="/api/v1/protocols/${protocol.id}/md" target="_blank">Скачать MD</a></li>
+                                        <li><a class="dropdown-item" href="/api/v1/protocols/${protocol.id}/json" target="_blank">Скачать JSON</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table></div>';
+                protocolsList.innerHTML = html;
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                protocolsList.innerHTML = '<div class="alert alert-danger text-center">Ошибка при загрузке протоколов</div>';
+            });
+    }
+    
+    function viewProtocol(protocolId) {
+        // Открываем модальное окно
+        const modal = new bootstrap.Modal(document.getElementById('protocolModal'));
+        modal.show();
+        
+        // Получаем содержимое протокола
+        const protocolContent = document.querySelector('.protocol-content');
+        protocolContent.innerHTML = '<div class="text-center"><span class="spinner-border" role="status" aria-hidden="true"></span><p>Загрузка содержимого протокола...</p></div>';
+        
+        // Обновляем ссылки для скачивания
+        document.getElementById('downloadMdBtn').href = `/api/v1/protocols/${protocolId}/md`;
+        document.getElementById('downloadJsonBtn').href = `/api/v1/protocols/${protocolId}/json`;
+        
+        axios.get(`/api/v1/protocols/${protocolId}`)
+            .then(function(response) {
+                const protocol = response.data;
+                
+                // Обновляем заголовок модального окна
+                document.getElementById('protocolModalLabel').textContent = protocol.metadata?.title || 'Протокол совещания';
+                
+                // Форматируем содержимое протокола
+                let html = '<div class="protocol-container">';
+                
+                // Метаданные
+                html += '<div class="metadata mb-4">';
+                html += `<h3>${protocol.metadata?.title || 'Протокол совещания'}</h3>`;
+                
+                if (protocol.metadata) {
+                    const date = protocol.metadata.date ? new Date(protocol.metadata.date).toLocaleDateString() : 'Не указана';
+                    html += `<p><strong>Дата:</strong> ${date}</p>`;
+                    
+                    if (protocol.metadata.location) {
+                        html += `<p><strong>Место проведения:</strong> ${protocol.metadata.location}</p>`;
+                    }
+                    
+                    if (protocol.metadata.organizer) {
+                        html += `<p><strong>Организатор:</strong> ${protocol.metadata.organizer}</p>`;
+                    }
+                }
+                
+                html += '</div>';
+                
+                // Участники
+                if (protocol.participants && protocol.participants.length > 0) {
+                    html += '<div class="participants mb-4">';
+                    html += '<h4>Участники</h4>';
+                    html += '<ul>';
+                    
+                    protocol.participants.forEach(function(participant) {
+                        if (typeof participant === 'string') {
+                            html += `<li>${participant}</li>`;
+                        } else if (participant.name) {
+                            let participantInfo = participant.name;
+                            if (participant.role) {
+                                participantInfo += ` (${participant.role})`;
+                            }
+                            html += `<li>${participantInfo}</li>`;
+                        }
+                    });
+                    
+                    html += '</ul>';
+                    html += '</div>';
+                }
+                
+                // Повестка
+                if (protocol.agenda_items && protocol.agenda_items.length > 0) {
+                    html += '<div class="agenda mb-4">';
+                    html += '<h4>Повестка</h4>';
+                    html += '<ol>';
+                    
+                    protocol.agenda_items.forEach(function(item) {
+                        if (typeof item === 'string') {
+                            html += `<li>${item}</li>`;
+                        } else if (item.title) {
+                            let itemInfo = item.title;
+                            if (item.description) {
+                                itemInfo += ` - ${item.description}`;
+                            }
+                            html += `<li>${itemInfo}</li>`;
+                        }
+                    });
+                    
+                    html += '</ol>';
+                    html += '</div>';
+                }
+                
+                // Обсуждения
+                if (protocol.discussions && protocol.discussions.length > 0) {
+                    html += '<div class="discussions mb-4">';
+                    html += '<h4>Обсуждения</h4>';
+                    
+                    protocol.discussions.forEach(function(discussion, index) {
+                        html += `<div class="discussion-item mb-3">`;
+                        html += `<h5>Тема ${index + 1}: ${discussion.topic || 'Без названия'}</h5>`;
+                        html += `<p>${discussion.summary || 'Нет содержимого'}</p>`;
+                        html += `</div>`;
+                    });
+                    
+                    html += '</div>';
+                }
+                
+                // Решения
+                if (protocol.decisions && protocol.decisions.length > 0) {
+                    html += '<div class="decisions mb-4">';
+                    html += '<h4>Решения</h4>';
+                    html += '<ul>';
+                    
+                    protocol.decisions.forEach(function(decision) {
+                        if (typeof decision === 'string') {
+                            html += `<li>${decision}</li>`;
+                        } else if (decision.text) {
+                            html += `<li>${decision.text}</li>`;
+                        }
+                    });
+                    
+                    html += '</ul>';
+                    html += '</div>';
+                }
+                
+                // Действия
+                if (protocol.action_items && protocol.action_items.length > 0) {
+                    html += '<div class="actions mb-4">';
+                    html += '<h4>Действия</h4>';
+                    html += '<ul>';
+                    
+                    protocol.action_items.forEach(function(action) {
+                        if (typeof action === 'string') {
+                            html += `<li>${action}</li>`;
+                        } else {
+                            let actionText = action.text || action.description || '';
+                            let assignee = action.assignee || '';
+                            let deadline = action.deadline || action.due_date || '';
+                            
+                            let actionInfo = actionText;
+                            if (assignee) {
+                                actionInfo += ` (Ответственный: ${assignee}`;
+                                if (deadline) {
+                                    actionInfo += `, Срок: ${deadline}`;
+                                }
+                                actionInfo += ')';
+                            } else if (deadline) {
+                                actionInfo += ` (Срок: ${deadline})`;
+                            }
+                            
+                            html += `<li>${actionInfo}</li>`;
+                        }
+                    });
+                    
+                    html += '</ul>';
+                    html += '</div>';
+                }
+                
+                // Итоги
+                if (protocol.summary) {
+                    html += '<div class="summary mb-4">';
+                    html += '<h4>Итоги</h4>';
+                    html += `<p>${protocol.summary}</p>`;
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+                
+                protocolContent.innerHTML = html;
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                protocolContent.innerHTML = '<div class="alert alert-danger">Ошибка при загрузке протокола</div>';
+            });
+    }
+    
+    function copyProtocolContent() {
+        const protocolContent = document.querySelector('.protocol-container');
+        if (!protocolContent) return;
+        
+        // Создаем временный элемент для копирования
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = protocolContent.innerHTML;
+        
+        // Удаляем все HTML-теги, оставляя только текст
+        const textContent = tempElement.textContent;
+        
+        // Копируем текст в буфер обмена
+        navigator.clipboard.writeText(textContent)
+            .then(() => {
+                const copyBtn = document.getElementById('copyProtocolBtn');
+                const originalText = copyBtn.innerHTML;
+                
+                copyBtn.innerHTML = '<i class="fas fa-check me-1"></i> Скопировано';
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            })
+            .catch(err => {
+                console.error('Ошибка при копировании: ', err);
+                alert('Не удалось скопировать текст');
+            });
+    }
+</script>
+{% endblock %}

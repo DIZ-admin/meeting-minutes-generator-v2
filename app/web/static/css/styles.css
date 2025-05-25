@@ -1,0 +1,78 @@
+/* Custom styles for the Meeting Protocol Generator web interface */
+
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #f1f8ff;
+}
+
+.progress {
+    height: 20px;
+}
+
+.status-message {
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.task-item {
+    border-left: 4px solid #6c757d;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.task-item.completed {
+    border-left-color: #28a745;
+}
+
+.task-item.error {
+    border-left-color: #dc3545;
+}
+
+.task-item.processing {
+    border-left-color: #007bff;
+}
+
+.task-item h6 {
+    margin-bottom: 5px;
+}
+
+.task-item p {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.task-item .download-links {
+    margin-top: 8px;
+}
+
+.download-links a {
+    margin-right: 8px;
+}
+
+/* Spinner for loading states */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.2em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .card {
+        margin-bottom: 15px;
+    }
+}

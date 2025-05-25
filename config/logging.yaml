@@ -1,0 +1,83 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  standard:
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  detailed:
+    format: "%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+  colored:
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: colored
+    stream: ext://sys.stdout
+
+  file:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: detailed
+    filename: /data/logs/app.log
+    maxBytes: 10485760  # 10MB
+    backupCount: 5
+    encoding: utf8
+
+  error_file:
+    class: logging.handlers.RotatingFileHandler
+    level: ERROR
+    formatter: detailed
+    filename: /data/logs/error.log
+    maxBytes: 10485760  # 10MB
+    backupCount: 5
+    encoding: utf8
+
+loggers:
+  app:
+    level: DEBUG
+    handlers: [console, file, error_file]
+    propagate: false
+
+  app.core:
+    level: DEBUG
+    handlers: [console, file, error_file]
+    propagate: false
+
+  app.web:
+    level: DEBUG
+    handlers: [console, file, error_file]
+    propagate: false
+
+  app.utils:
+    level: DEBUG
+    handlers: [console, file, error_file]
+    propagate: false
+
+  app.adapters:
+    level: DEBUG
+    handlers: [console, file, error_file]
+    propagate: false
+
+  # Логирование запросов FastAPI
+  uvicorn:
+    level: INFO
+    handlers: [console, file]
+    propagate: false
+
+  uvicorn.access:
+    level: INFO
+    handlers: [console, file]
+    propagate: false
+
+  # Логирование внешних библиотек
+  openai:
+    level: INFO
+    handlers: [console, file, error_file]
+    propagate: false
+
+root:
+  level: INFO
+  handlers: [console, file, error_file]
+  propagate: false

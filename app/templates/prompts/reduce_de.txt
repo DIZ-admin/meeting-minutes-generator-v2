@@ -1,0 +1,27 @@
+Sie sind ein Experte für die Analyse von Besprechungsprotokollen und die Konsolidierung von Informationen.
+
+Ich habe verschiedene Segmente eines Besprechungsprotokolls analysiert und Zusammenfassungen, Entscheidungen und Aktionspunkte aus jedem Segment extrahiert. Jetzt brauche ich Sie, um diese Informationen zu einem kohärenten Überblick über die gesamte Besprechung zu konsolidieren.
+
+Bitte überprüfen Sie die folgenden Analyseergebnisse aus verschiedenen Segmenten der Besprechung und erstellen Sie eine konsolidierte Ansicht:
+
+{map_results}
+
+Bitte stellen Sie eine konsolidierte Analyse im folgenden JSON-Format bereit:
+{
+  "summary": "Eine umfassende Zusammenfassung der gesamten Besprechung, die alle wichtigen besprochenen Themen abdeckt",
+  "decisions": [
+    {"decision": "Entscheidung 1, die getroffen wurde", "context": "Kurzer Kontext für diese Entscheidung"},
+    {"decision": "Entscheidung 2, die getroffen wurde", "context": "Kurzer Kontext für diese Entscheidung"}
+  ],
+  "actions": [
+    {"action": "Aktionspunkt 1", "assignee": "Verantwortliche Person (falls erwähnt)", "due_date": "Fälligkeitsdatum (falls erwähnt)", "context": "Kurzer Kontext für diesen Aktionspunkt"},
+    {"action": "Aktionspunkt 2", "assignee": "Verantwortliche Person (falls erwähnt)", "due_date": "Fälligkeitsdatum (falls erwähnt)", "context": "Kurzer Kontext für diesen Aktionspunkt"}
+  ]
+}
+
+Wichtige Richtlinien:
+1. Eliminieren Sie doppelte Entscheidungen und Aktionen (diejenigen, die sich auf dasselbe beziehen)
+2. Kombinieren Sie verwandte Informationen aus verschiedenen Segmenten
+3. Stellen Sie sicher, dass die Zusammenfassung einen vollständigen Überblick über die gesamte Besprechung bietet
+4. Schließen Sie alle eindeutigen Entscheidungen und Aktionspunkte ein
+5. Bewahren Sie die ursprüngliche Bedeutung und den Kontext jedes Elements

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EGL_Protokoll",
+  "type": "object",
+  "required": ["meta", "teilnehmer", "traktanden"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["titel", "datum", "ort", "sitzungsleiter", "verfasser"],
+      "properties": {
+        "titel": { "type": "string" },
+        "datum": { "type": "string", "format": "date" },
+        "ort":   { "type": "string" },
+        "sitzungsleiter": { "type": "string" },
+        "verfasser": { "type": "string" }
+      }
+    },
+    "teilnehmer": {
+      "type": "object",
+      "required": ["anwesend", "entschuldigt"],
+      "properties": {
+        "anwesend":   { "type": "array", "items": { "type": "string" } },
+        "entschuldigt":{ "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "traktanden": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "titel", "diskussion", "pendenzen"],
+        "properties": {
+          "id":   { "type": "string" },
+          "titel":{ "type": "string" },
+          "diskussion": { "type": "string" },
+          "entscheidungen": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": []
+          },
+          "pendenzen": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["wer", "was"],
+              "properties": {
+                "wer":  { "type": "string" },
+                "was":  { "type": "string" },
+                "frist":{ "type": ["string", "null"], "format": "date" }
+              }
+            },
+            "default": []
+          }
+        }
+      }
+    },
+    "anhänge": {
+      "type": "array",
+      "items": { "type": "string", "format": "uri" },
+      "default": []
+    }
+  }
+}

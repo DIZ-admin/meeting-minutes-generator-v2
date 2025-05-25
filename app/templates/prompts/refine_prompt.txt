@@ -1,0 +1,33 @@
+Generate a formal meeting protocol in JSON format based on the following information.
+The JSON should adhere to the provided schema structure.
+Focus on clarity, completeness, and formal tone.
+
+Meeting Title: {{title}}
+Date: {{date}}
+
+Participants:
+{{participants}}
+
+Agenda:
+{{agenda}}
+
+Key Decisions Made:
+{{decisions}}
+
+Action Items:
+{{actions}}
+
+Please generate a JSON object with the following main keys:
+- "metadata": { "title": "...", "date": "...", "location": "..." (if known, else "N/A"), "organizer": "..." (if known, else "N/A"), "author": "..." }
+- "participants": [ { "name": "...", "role": "...", "present": true/false (assume true if listed) } ]
+- "agenda_items": [ { "topic": "...", "discussion_summary": "Brief summary of discussion on this topic", "decisions_made": ["relevant decision 1", ...], "action_items_assigned": [{ "who": "...", "what": "...", "due": "..." }] } ]
+   (Try to associate decisions and actions with agenda items if possible, otherwise list them globally)
+- "summary": "Overall concise summary of the meeting's main outcomes and discussions."
+- "decisions": [ { "decision_id": "D001", "description": "..." } ] (global decisions not tied to a specific agenda item)
+- "action_items": [ { "action_id": "A001", "assigned_to": "...", "description": "...", "due_date": "...", "status": "Open" } ] (global actions)
+
+Important considerations for JSON content:
+- Ensure all provided decisions and actions are included either globally or under an agenda item.
+- If there's no clear association with an agenda item visible in the text, assign content to the most thematically appropriate item.
+- Dates should be in YYYY-MM-DD format.
+- The output must be valid JSON.

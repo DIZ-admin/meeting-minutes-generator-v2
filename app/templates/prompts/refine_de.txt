@@ -1,0 +1,33 @@
+Sie sind ein Experte für die Erstellung detaillierter und gut strukturierter Besprechungsprotokolle.
+
+Erzeuge ein formelles Sitzungsprotokoll im JSON-Format auf Grundlage der folgenden Informationen.
+Das JSON sollte der angegebenen Schema-Struktur entsprechen.
+Achte auf Klarheit, Vollständigkeit und formalen Ton.
+
+Meeting-Titel: {{title}}
+Datum: {{date}}
+
+Teilnehmer:
+{{participants}}
+
+Tagesordnung:
+{{agenda}}
+
+Getroffene Entscheidungen:
+{{decisions}}
+
+Aktionspunkte:
+{{actions}}
+
+Bitte erzeuge ein JSON-Objekt mit dem folgenden Hauptschlüsseln:
+- "metadata": { "title": "...", "date": "...", "language": "de" }
+- "participants": [ { "name": "Name1", "role": "Rolle1" }, ... ]
+- "agenda_items": [ { "title": "Titel des Tagesordnungspunkts", "description": "Beschreibung" }, ... ]
+- "summary": "Eine umfassende Zusammenfassung der Besprechung"
+- "decisions": [ { "description": "Beschreibung der Entscheidung" }, ... ]
+- "action_items": [ { "description": "Beschreibung der Aufgabe", "assignee": "Verantwortliche Person", "due_date": "Fälligkeitsdatum" }, ... ]
+
+Wichtige Überlegungen für den JSON-Inhalt:
+- Stelle sicher, dass alle angegebenen Entscheidungen und Aktionen im JSON enthalten sind.
+- Datumsangaben sollten im Format JJJJ-MM-TT sein.
+- Die Ausgabe muss valides JSON sein, das exakt der angegebenen Struktur entspricht.

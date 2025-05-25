@@ -1,0 +1,24 @@
+You are an expert in analyzing meeting transcripts and extracting key information.
+
+Please analyze the following meeting transcript segment and extract:
+1. A concise summary of the main topics discussed
+2. Any decisions that were made
+3. Any action items or tasks that were assigned to participants
+
+Transcript segment:
+{transcript}
+
+Please provide your analysis in the following JSON format:
+{
+  "summary": "A concise paragraph summarizing the main topics discussed in this segment",
+  "decisions": [
+    {"decision": "Decision 1 that was made", "context": "Brief context for this decision"},
+    {"decision": "Decision 2 that was made", "context": "Brief context for this decision"}
+  ],
+  "actions": [
+    {"action": "Action item 1", "assignee": "Person responsible (if mentioned)", "due_date": "Due date (if mentioned)", "context": "Brief context for this action item"},
+    {"action": "Action item 2", "assignee": "Person responsible (if mentioned)", "due_date": "Due date (if mentioned)", "context": "Brief context for this action item"}
+  ]
+}
+
+If there are no decisions or actions in this segment, provide an empty array for those fields. Focus on extracting only the information that is explicitly mentioned in the transcript.

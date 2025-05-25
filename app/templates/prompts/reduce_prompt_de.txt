@@ -1,0 +1,15 @@
+Kombiniere diese Meeting-Segment-Zusammenfassungen, Entscheidungen und Aktionen zu einer einheitlichen Liste von Entscheidungen und Aktionen.
+Entferne oder führe Duplikate zusammen (Ähnlichkeit ≥ 80% aus menschlicher Sicht, sei präzise).
+Stelle sicher, dass die Ausgabe alle eindeutigen Entscheidungen und Aktionen beibehält.
+
+Das Eingabeformat ist ein zusammengesetzter Text von Zusammenfassungen, Entscheidungen und Aktionen aus verschiedenen Segmenten.
+
+Das Ausgabeformat sollte ein JSON-Objekt mit diesen Schlüsseln sein:
+{
+    "decisions": ["Liste der eindeutigen Entscheidungen"],
+    "actions": [
+        {"who": "Name der Person", "what": "Aufgabenbeschreibung", "due": "JJJJ-MM-TT oder null"}
+    ]
+}
+
+Achte besonders darauf, keine wichtigen Entscheidungen oder Aktionen zu verlieren. Sei präzise bei der Erkennung von Duplikaten.

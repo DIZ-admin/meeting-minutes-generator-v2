@@ -1,0 +1,15 @@
+Combine these meeting segment summaries, decisions, and actions into a unified list of decisions and actions.
+Remove or merge duplicates (similarity ≥ 80% for human understanding, be precise).
+Ensure the output maintains all unique decisions and actions.
+
+Input format will be a combined text of summaries, decisions, and actions from various segments.
+
+Output format should be a JSON object with these keys:
+{
+    "decisions": ["List of unique decisions"],
+    "actions": [
+        {"who": "Person name", "what": "Task description", "due": "YYYY-MM-DD or null"}
+    ]
+}
+
+Pay special attention to not losing any important decisions or actions. Be precise when identifying duplicates.

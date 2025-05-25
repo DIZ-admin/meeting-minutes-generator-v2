@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Meeting Protocol Generator - Задачи{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>Задачи обработки</h2>
+        <p class="lead">Мониторинг и управление задачами обработки аудиофайлов</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Активные и завершенные задачи</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary me-2" id="refreshTasksBtn">
+                        <i class="fas fa-sync-alt me-1"></i> Обновить
+                    </button>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Фильтр <span class="filter-label">Все</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item filter-item active" href="#" data-filter="all">Все</a></li>
+                            <li><a class="dropdown-item filter-item" href="#" data-filter="pending">Ожидающие</a></li>
+                            <li><a class="dropdown-item filter-item" href="#" data-filter="processing">В процессе</a></li>
+                            <li><a class="dropdown-item filter-item" href="#" data-filter="completed">Завершенные</a></li>
+                            <li><a class="dropdown-item filter-item" href="#" data-filter="failed">С ошибками</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="tasksList">
+                    <p class="text-center">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 
+                        Загрузка задач...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для просмотра деталей задачи -->
+<div class="modal fade" id="taskDetailModal" tabindex="-1" aria-labelledby="taskDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskDetailModalLabel">Детали задачи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="task-detail-content">
+                    <div class="text-center">
+                        <span class="spinner-border" role="status" aria-hidden="true"></span>
+                        <p>Загрузка деталей задачи...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="btn-group me-auto task-actions d-none">
+                    <a href="#" class="btn btn-outline-success download-md" target="_blank">
+                        <i class="fas fa-file-download me-1"></i> Скачать MD
+                    </a>
+                    <a href="#" class="btn btn-outline-info download-json" target="_blank">
+                        <i class="fas fa-file-code me-1"></i> Скачать JSON
+                    </a>
+                    <button type="button" class="btn btn-outline-danger cancel-task">
+                        <i class="fas fa-times-circle me-1"></i> Отменить задачу
+                    </button>
+                </div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentFilter = 'all';
+    let tasks = [];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Загрузка списка задач при загрузке страницы
+        loadTasks();
+        
+        // Обработчик кнопки обновления списка задач
+        document.getElementById('refreshTasksBtn').addEventListener('click', loadTasks);
+        
+        // Обработчики фильтров
+        document.querySelectorAll('.filter-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Обновляем активный фильтр
+                document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Обновляем метку фильтра
+                document.querySelector('.filter-label').textContent = this.textContent;
+                
+                // Применяем фильтр
+                currentFilter = this.dataset.filter;
+                renderTasks();
+            });
+        });
+        
+        // Автоматическое обновление каждые 10 секунд
+        setInterval(loadTasks, 10000);
+    });
+    
+    function loadTasks() {
+        const tasksList = document.getElementById('tasksList');
+        if (!tasksList) return;
+        
+        // Показываем индикатор загрузки только если список пуст
+        if (tasks.length === 0) {
+            tasksList.innerHTML = '<p class="text-center"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Загрузка задач...</p>';
+        }
+        
+        axios.get('/api/v1/tasks')
+            .then(function(response) {
+                tasks = response.data.tasks;
+                renderTasks();
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                tasksList.innerHTML = '<div class="alert alert-danger text-center">Ошибка при загрузке задач</div>';
+            });
+    }
+    
+    function renderTasks() {
+        const tasksList = document.getElementById('tasksList');
+        if (!tasksList) return;
+        
+        // Фильтруем задачи
+        let filteredTasks = tasks;
+        if (currentFilter !== 'all') {
+            filteredTasks = tasks.filter(task => task.status === currentFilter);
+        }
+        
+        if (filteredTasks.length === 0) {
+            tasksList.innerHTML = '<div class="alert alert-info text-center">Нет задач, соответствующих выбранному фильтру</div>';
+            return;
+        }
+        
+        let html = '<div class="table-responsive"><table class="table table-hover">';
+        html += `
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Файл</th>
+                    <th>Статус</th>
+                    <th>Прогресс</th>
+                    <th>Обновлено</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        filteredTasks.forEach(function(task) {
+            const statusClass = {
+                'pending': 'bg-secondary',
+                'processing': 'bg-primary',
+                'completed': 'bg-success',
+                'failed': 'bg-danger'
+            }[task.status] || 'bg-secondary';
+            
+            const statusText = {
+                'pending': 'Ожидание',
+                'processing': 'Обработка',
+                'completed': 'Завершено',
+                'failed': 'Ошибка'
+            }[task.status] || 'Неизвестно';
+            
+            const updatedAt = new Date(task.updated_at).toLocaleString();
+            
+            html += `
+                <tr>
+                    <td>${task.task_id}</td>
+                    <td>${task.file_name || 'Не указано'}</td>
+                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar ${statusClass}" role="progressbar" style="width: ${task.progress}%;" 
+                                 aria-valuenow="${task.progress}" aria-valuemin="0" aria-valuemax="100">
+                                ${task.progress}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>${updatedAt}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="viewTaskDetail('${task.task_id}')">
+                            <i class="fas fa-info-circle me-1"></i> Детали
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table></div>';
+        tasksList.innerHTML = html;
+    }
+    
+    function viewTaskDetail(taskId) {
+        // Открываем модальное окно
+        const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
+        modal.show();
+        
+        // Получаем детали задачи
+        const taskDetailContent = document.querySelector('.task-detail-content');
+        taskDetailContent.innerHTML = '<div class="text-center"><span class="spinner-border" role="status" aria-hidden="true"></span><p>Загрузка деталей задачи...</p></div>';
+        
+        // Скрываем действия задачи
+        document.querySelector('.task-actions').classList.add('d-none');
+        
+        axios.get(`/api/v1/status/${taskId}`)
+            .then(function(response) {
+                const task = response.data;
+                
+                // Обновляем заголовок модального окна
+                document.getElementById('taskDetailModalLabel').textContent = `Задача #${taskId}`;
+                
+                // Определяем класс статуса
+                const statusClass = {
+                    'pending': 'bg-secondary',
+                    'processing': 'bg-primary',
+                    'completed': 'bg-success',
+                    'failed': 'bg-danger'
+                }[task.status] || 'bg-secondary';
+                
+                // Определяем текст статуса
+                const statusText = {
+                    'pending': 'Ожидание',
+                    'processing': 'Обработка',
+                    'completed': 'Завершено',
+                    'failed': 'Ошибка'
+                }[task.status] || 'Неизвестно';
+                
+                // Форматируем время
+                const createdAt = new Date(task.created_at).toLocaleString();
+                const updatedAt = new Date(task.updated_at).toLocaleString();
+                
+                // Формируем HTML
+                let html = '<div class="task-detail">';
+                
+                // Основная информация
+                html += '<div class="row mb-4">';
+                html += '<div class="col-md-6">';
+                html += `<p><strong>ID задачи:</strong> ${task.task_id}</p>`;
+                html += `<p><strong>Файл:</strong> ${task.file_name || 'Не указано'}</p>`;
+                html += `<p><strong>Статус:</strong> <span class="badge ${statusClass}">${statusText}</span></p>`;
+                html += '</div>';
+                html += '<div class="col-md-6">';
+                html += `<p><strong>Создано:</strong> ${createdAt}</p>`;
+                html += `<p><strong>Обновлено:</strong> ${updatedAt}</p>`;
+                html += `<p><strong>Тип задачи:</strong> ${task.task_type || 'Обработка аудио'}</p>`;
+                html += '</div>';
+                html += '</div>';
+                
+                // Прогресс
+                html += '<div class="mb-4">';
+                html += '<h5>Прогресс</h5>';
+                html += '<div class="progress" style="height: 25px;">';
+                html += `<div class="progress-bar ${statusClass}" role="progressbar" style="width: ${task.progress}%;" 
+                         aria-valuenow="${task.progress}" aria-valuemin="0" aria-valuemax="100">
+                        ${task.progress}%
+                      </div>`;
+                html += '</div>';
+                html += `<p class="mt-2">${task.message || 'Нет дополнительной информации'}</p>`;
+                html += '</div>';
+                
+                // Этапы обработки
+                if (task.steps && task.steps.length > 0) {
+                    html += '<div class="mb-4">';
+                    html += '<h5>Этапы обработки</h5>';
+                    html += '<ul class="list-group">';
+                    
+                    task.steps.forEach(function(step) {
+                        const stepStatusClass = {
+                            'pending': 'list-group-item-secondary',
+                            'processing': 'list-group-item-primary',
+                            'completed': 'list-group-item-success',
+                            'failed': 'list-group-item-danger'
+                        }[step.status] || 'list-group-item-secondary';
+                        
+                        html += `<li class="list-group-item ${stepStatusClass}">`;
+                        html += `<div class="d-flex w-100 justify-content-between">`;
+                        html += `<h6 class="mb-1">${step.name}</h6>`;
+                        html += `<small>${step.duration ? step.duration + ' сек.' : ''}</small>`;
+                        html += `</div>`;
+                        html += `<p class="mb-1">${step.message || 'Нет дополнительной информации'}</p>`;
+                        html += `</li>`;
+                    });
+                    
+                    html += '</ul>';
+                    html += '</div>';
+                }
+                
+                // Логи
+                if (task.logs && task.logs.length > 0) {
+                    html += '<div class="mb-4">';
+                    html += '<h5>Логи</h5>';
+                    html += '<div class="logs-container bg-dark text-light p-3" style="max-height: 300px; overflow-y: auto;">';
+                    
+                    task.logs.forEach(function(log) {
+                        const logClass = {
+                            'info': 'text-info',
+                            'warning': 'text-warning',
+                            'error': 'text-danger',
+                            'debug': 'text-secondary'
+                        }[log.level] || 'text-light';
+                        
+                        html += `<div class="${logClass}">`;
+                        html += `[${new Date(log.timestamp).toLocaleString()}] ${log.message}`;
+                        html += '</div>';
+                    });
+                    
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+                
+                taskDetailContent.innerHTML = html;
+                
+                // Показываем действия задачи для завершенных задач
+                if (task.status === 'completed') {
+                    const taskActions = document.querySelector('.task-actions');
+                    taskActions.classList.remove('d-none');
+                    
+                    // Обновляем ссылки для скачивания
+                    taskActions.querySelector('.download-md').href = `/api/v1/download/${taskId}/md`;
+                    taskActions.querySelector('.download-json').href = `/api/v1/download/${taskId}/json`;
+                    
+                    // Добавляем обработчик для отмены задачи
+                    const cancelBtn = taskActions.querySelector('.cancel-task');
+                    cancelBtn.onclick = function() {
+                        cancelTask(taskId);
+                    };
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                taskDetailContent.innerHTML = '<div class="alert alert-danger">Ошибка при загрузке деталей задачи</div>';
+            });
+    }
+    
+    function cancelTask(taskId) {
+        if (!confirm('Вы уверены, что хотите отменить эту задачу?')) {
+            return;
+        }
+        
+        axios.delete(`/api/v1/tasks/${taskId}`)
+            .then(function(response) {
+                alert('Задача успешно отменена');
+                
+                // Закрываем модальное окно
+                const modal = bootstrap.Modal.getInstance(document.getElementById('taskDetailModal'));
+                modal.hide();
+                
+                // Обновляем список задач
+                loadTasks();
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Ошибка при отмене задачи: ' + (error.response?.data?.detail || error.message));
+            });
+    }
+</script>
+{% endblock %}

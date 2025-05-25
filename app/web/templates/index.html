@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Meeting Protocol Generator - Главная{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 text-center mb-4">
+        <h1>Генератор протоколов совещаний</h1>
+        <p class="lead">Загрузите аудиозапись совещания для автоматической генерации протокола</p>
+    </div>
+</div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Форма загрузки -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Загрузка файла</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="audioFile" class="form-label">Файл для обработки</label>
+                                <input type="file" class="form-control" id="audioFile" name="file" accept=".wav,.mp3,.m4a,.ogg,.json" required>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="isTranscript" name="is_transcript">
+                                    <label class="form-check-label" for="isTranscript">
+                                        Это JSON-файл транскрипта
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">Поддерживаются аудиофайлы (WAV, MP3, M4A, OGG) и JSON-файлы транскриптов</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Название совещания</label>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="Например: Еженедельное совещание команды">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="date" class="form-label">Дата</label>
+                                    <input type="date" class="form-control" id="date" name="date">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="location" class="form-label">Место проведения</label>
+                                    <input type="text" class="form-control" id="location" name="location" placeholder="Например: Онлайн">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="organizer" class="form-label">Организатор</label>
+                                <input type="text" class="form-control" id="organizer" name="organizer" placeholder="Имя организатора">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="participants" class="form-label">Участники (через запятую)</label>
+                                <input type="text" class="form-control" id="participants" name="participants" placeholder="Иван Иванов, Петр Петров, ...">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="agenda" class="form-label">Повестка (через запятую)</label>
+                                <input type="text" class="form-control" id="agenda" name="agenda" placeholder="Обзор проекта, Планирование, ...">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="language" class="form-label">Язык аудио/транскрипта</label>
+                                <select class="form-select" id="language" name="language">
+                                    <option value="">Автоопределение</option>
+                                    <option value="de">Немецкий (de)</option>
+                                    <option value="ru">Русский (ru)</option>
+                                    <option value="en">Английский (en)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="skipNotifications" name="skip_notifications">
+                                <label class="form-check-label" for="skipNotifications">Пропустить отправку уведомлений</label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submitBtn">Загрузить и обработать</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <!-- Список задач и статус обработки -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Задачи обработки</h5>
+                        <button class="btn btn-sm btn-outline-secondary" id="refreshTasksBtn">
+                            <i class="bi bi-arrow-clockwise"></i> Обновить
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="currentTaskStatus" class="mb-4 d-none">
+                            <h6>Текущая задача</h6>
+                            <div class="progress mb-2">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <p class="status-message"></p>
+                            <div class="download-links d-none">
+                                <a href="#" class="btn btn-sm btn-success download-md">Скачать Markdown</a>
+                                <a href="#" class="btn btn-sm btn-info download-json">Скачать JSON</a>
+                            </div>
+                        </div>
+                        
+                        <div id="tasksList">
+                            <p class="text-muted text-center">Нет активных задач</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация формы загрузки
+        initUploadForm();
+        
+        // Загрузка списка задач
+        loadTasks();
+        
+        // Обновление статуса текущей задачи каждые 5 секунд
+        setInterval(updateCurrentTaskStatus, 5000);
+        
+        // Обработчик кнопки обновления списка задач
+        document.getElementById('refreshTasksBtn').addEventListener('click', loadTasks);
+    });
+    
+    function initUploadForm() {
+        const form = document.getElementById('uploadForm');
+        if (!form) return;
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Загрузка...';
+            
+            const formData = new FormData(form);
+            
+            // Преобразуем информацию о встрече в JSON
+            const meetingInfo = {
+                title: formData.get('title'),
+                date: formData.get('date'),
+                location: formData.get('location'),
+                organizer: formData.get('organizer')
+            };
+            
+            // Удаляем отдельные поля и добавляем их в meeting_info
+            formData.delete('title');
+            formData.delete('date');
+            formData.delete('location');
+            formData.delete('organizer');
+            formData.append('meeting_info', JSON.stringify(meetingInfo));
+            
+            axios.post('/api/v1/upload', formData)
+                .then(function(response) {
+                    console.log('Success:', response.data);
+                    
+                    // Очищаем форму
+                    form.reset();
+                    
+                    // Обновляем статус задачи
+                    updateTaskStatus(response.data.task_id);
+                    
+                    // Обновляем список задач
+                    loadTasks();
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    alert('Ошибка при загрузке файла: ' + (error.response?.data?.detail || error.message));
+                })
+                .finally(function() {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Загрузить и обработать';
+                });
+        });
+    }
+    
+    function loadTasks() {
+        const tasksList = document.getElementById('tasksList');
+        if (!tasksList) return;
+        
+        tasksList.innerHTML = '<p class="text-center"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Загрузка задач...</p>';
+        
+        axios.get('/api/v1/tasks')
+            .then(function(response) {
+                const tasks = response.data.tasks;
+                
+                if (tasks.length === 0) {
+                    tasksList.innerHTML = '<p class="text-muted text-center">Нет активных задач</p>';
+                    return;
+                }
+                
+                let html = '<div class="list-group">';
+                
+                tasks.forEach(function(task) {
+                    const statusClass = {
+                        'pending': 'bg-secondary',
+                        'processing': 'bg-primary',
+                        'completed': 'bg-success',
+                        'failed': 'bg-danger'
+                    }[task.status] || 'bg-secondary';
+                    
+                    html += `
+                        <a href="#" class="list-group-item list-group-item-action" onclick="updateTaskStatus('${task.task_id}'); return false;">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">${task.file_name || 'Задача ' + task.task_id}</h6>
+                                <small><span class="badge ${statusClass}">${task.status}</span></small>
+                            </div>
+                            <p class="mb-1">${task.message}</p>
+                            <small>${new Date(task.updated_at).toLocaleString()}</small>
+                        </a>
+                    `;
+                });
+                
+                html += '</div>';
+                tasksList.innerHTML = html;
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                tasksList.innerHTML = '<p class="text-danger text-center">Ошибка при загрузке задач</p>';
+            });
+    }
+    
+    function updateTaskStatus(taskId) {
+        const statusContainer = document.getElementById('currentTaskStatus');
+        if (!statusContainer) return;
+        
+        statusContainer.classList.remove('d-none');
+        const progressBar = statusContainer.querySelector('.progress-bar');
+        const statusMessage = statusContainer.querySelector('.status-message');
+        const downloadLinks = statusContainer.querySelector('.download-links');
+        
+        function checkStatus() {
+            axios.get(`/api/v1/status/${taskId}`)
+                .then(function(response) {
+                    const data = response.data;
+                    
+                    // Обновляем прогресс
+                    progressBar.style.width = `${data.progress}%`;
+                    progressBar.setAttribute('aria-valuenow', data.progress);
+                    
+                    // Обновляем сообщение
+                    statusMessage.textContent = data.message;
+                    
+                    // Обновляем класс прогресс-бара в зависимости от статуса
+                    progressBar.className = 'progress-bar progress-bar-striped';
+                    if (data.status === 'processing') {
+                        progressBar.classList.add('progress-bar-animated', 'bg-primary');
+                    } else if (data.status === 'completed') {
+                        progressBar.classList.add('bg-success');
+                        // Показываем ссылки для скачивания
+                        downloadLinks.classList.remove('d-none');
+                        downloadLinks.querySelector('.download-md').href = `/api/v1/download/${taskId}/md`;
+                        downloadLinks.querySelector('.download-json').href = `/api/v1/download/${taskId}/json`;
+                    } else if (data.status === 'failed') {
+                        progressBar.classList.add('bg-danger');
+                    } else {
+                        progressBar.classList.add('bg-secondary');
+                    }
+                    
+                    // Если задача все еще выполняется, продолжаем проверять статус
+                    if (data.status === 'processing' || data.status === 'pending') {
+                        setTimeout(checkStatus, 5000);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    statusMessage.textContent = 'Ошибка при получении статуса задачи';
+                    progressBar.className = 'progress-bar progress-bar-striped bg-danger';
+                });
+        }
+        
+        // Начинаем проверку статуса
+        checkStatus();
+    }
+    
+    function updateCurrentTaskStatus() {
+        // Если есть активная задача, обновляем ее статус
+        const statusContainer = document.getElementById('currentTaskStatus');
+        if (statusContainer && !statusContainer.classList.contains('d-none')) {
+            const taskId = statusContainer.getAttribute('data-task-id');
+            if (taskId) {
+                updateTaskStatus(taskId);
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,220 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Protocol Schema",
+  "description": "JSON-схема для валидации протокола совещания",
+  "type": "object",
+  "required": ["metadata", "summary"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Метаданные протокола",
+      "required": ["title", "date"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Название встречи"
+        },
+        "date": {
+          "type": "string",
+          "description": "Дата встречи в формате YYYY-MM-DD",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "location": {
+          "type": "string",
+          "description": "Место проведения встречи"
+        },
+        "organizer": {
+          "type": "string",
+          "description": "Организатор встречи"
+        },
+        "author": {
+          "type": "string",
+          "description": "Автор протокола"
+        },
+        "language": {
+          "type": "string",
+          "description": "Язык протокола (например, 'ru', 'en', 'de')",
+          "pattern": "^[a-z]{2}$"
+        }
+      }
+    },
+    "participants": {
+      "type": "array",
+      "description": "Участники встречи",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Имя участника в виде строки"
+          },
+          {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Имя участника"
+              },
+              "role": {
+                "type": "string",
+                "description": "Роль участника"
+              },
+              "email": {
+                "type": "string",
+                "description": "Email участника",
+                "format": "email"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "agenda_items": {
+      "type": "array",
+      "description": "Пункты повестки",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Пункт повестки в виде строки"
+          },
+          {
+            "type": "object",
+            "required": ["title"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "Заголовок пункта повестки"
+              },
+              "notes": {
+                "type": "string",
+                "description": "Заметки по пункту повестки"
+              },
+              "duration": {
+                "type": "string",
+                "description": "Продолжительность обсуждения"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["topic"],
+            "properties": {
+              "topic": {
+                "type": "string",
+                "description": "Тема"
+              },
+              "description": {
+                "type": "string",
+                "description": "Описание"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "Краткое содержание встречи"
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Принятые решения",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Текст решения в виде строки"
+          },
+          {
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "Текст решения"
+              },
+              "owner": {
+                "type": "string",
+                "description": "Ответственный за решение"
+              },
+              "context": {
+                "type": "string",
+                "description": "Контекст принятия решения"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["decision"],
+            "properties": {
+              "decision": {
+                "type": "string",
+                "description": "Текст решения"
+              },
+              "context": {
+                "type": "string",
+                "description": "Контекст принятия решения"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "action_items": {
+      "type": "array",
+      "description": "Поставленные задачи",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Текст задачи в виде строки"
+          },
+          {
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "Текст задачи"
+              },
+              "owner": {
+                "type": "string",
+                "description": "Ответственный"
+              },
+              "due_date": {
+                "type": "string",
+                "description": "Срок выполнения в формате YYYY-MM-DD",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["action"],
+            "properties": {
+              "action": {
+                "type": "string",
+                "description": "Текст задачи"
+              },
+              "assignee": {
+                "type": "string",
+                "description": "Ответственный"
+              },
+              "due_date": {
+                "type": "string",
+                "description": "Срок выполнения в формате YYYY-MM-DD",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Время создания протокола в формате ISO 8601",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,43 @@
+# Директории
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+.env/
+env/
+logs/
+output/
+uploads/
+build/
+dist/
+*.egg-info/
+
+# Файлы
+*.py[cod]
+*$py.class
+*.so
+.DS_Store
+.env
+.env.local
+*.log
+*.sqlite
+*.db
+
+# Файлы IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Временные файлы
+*.bak
+*.tmp
+*.temp
+
+# Ключи API и токены
+.api_key
+.token
+
+# Специфичные для проекта
+transcript.json
+_private/

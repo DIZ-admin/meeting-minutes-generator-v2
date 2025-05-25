@@ -1,0 +1,24 @@
+Sie sind ein Experte für die Analyse von Besprechungsprotokollen und die Extraktion wichtiger Informationen.
+
+Bitte analysieren Sie das folgende Besprechungsprotokoll-Segment und extrahieren Sie:
+1. Eine präzise Zusammenfassung der besprochenen Hauptthemen
+2. Alle Entscheidungen, die getroffen wurden
+3. Alle Aktionspunkte oder Aufgaben, die den Teilnehmern zugewiesen wurden
+
+Protokoll-Segment:
+{transcript}
+
+Bitte geben Sie Ihre Analyse im folgenden JSON-Format an:
+{
+  "summary": "Ein präziser Absatz, der die im Segment besprochenen Hauptthemen zusammenfasst",
+  "decisions": [
+    {"decision": "Entscheidung 1, die getroffen wurde", "context": "Kurzer Kontext für diese Entscheidung"},
+    {"decision": "Entscheidung 2, die getroffen wurde", "context": "Kurzer Kontext für diese Entscheidung"}
+  ],
+  "actions": [
+    {"action": "Aktionspunkt 1", "assignee": "Verantwortliche Person (falls erwähnt)", "due_date": "Fälligkeitsdatum (falls erwähnt)", "context": "Kurzer Kontext für diesen Aktionspunkt"},
+    {"action": "Aktionspunkt 2", "assignee": "Verantwortliche Person (falls erwähnt)", "due_date": "Fälligkeitsdatum (falls erwähnt)", "context": "Kurzer Kontext für diesen Aktionspunkt"}
+  ]
+}
+
+Wenn es in diesem Segment keine Entscheidungen oder Aktionen gibt, geben Sie für diese Felder ein leeres Array an. Konzentrieren Sie sich darauf, nur die Informationen zu extrahieren, die explizit im Protokoll erwähnt werden.
